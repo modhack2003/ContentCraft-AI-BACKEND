@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: auth-api
+    env: node
+    region: oregon
+    buildCommand: 'npm install'
+    startCommand: 'node server.js'
+    envVars:
+      - key: MONGO_URI
+        fromSecret: MONGO_URI
+      - key: JWT_SECRET
+        fromSecret: JWT_SECRET
+      - key: TWILIO_ACCOUNT_SID
+        fromSecret: TWILIO_ACCOUNT_SID
+      - key: TWILIO_AUTH_TOKEN
+        fromSecret: TWILIO_AUTH_TOKEN
+      - key: TWILIO_PHONE_NUMBER
+        fromSecret: TWILIO_PHONE_NUMBER
