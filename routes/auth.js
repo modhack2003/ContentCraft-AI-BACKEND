@@ -8,7 +8,8 @@ const router = express.Router();
 // Registration route
 router.post('/register', async (req, res) => {
   const { email, password, confirmPassword } = req.body;
-console.log(req.body);
+  console.log(req.body); // Log request body to check incoming data
+
   if (password !== confirmPassword) {
     return res.status(400).json({ msg: 'Passwords do not match' });
   }
@@ -21,18 +22,19 @@ console.log(req.body);
 
     user = new User({
       email,
-      password
+      password // Ensure password is hashed before saving in actual application
     });
 
     await user.save();
 
     try {
       const otp = await sendOTP(email);
+      console.log('OTP sent successfully:', otp); // Log successful OTP sending
       res.status(201).redirect(`/verify?email=${email}`); // Redirect to OTP verification page
     } catch (otpError) {
       console.error('Error sending OTP:', otpError.message);
       await User.findByIdAndDelete(user._id); // Rollback user creation if OTP fails
-      res.status(500).json({ msg: 'Error sending OTP, please try again.' });
+      return res.status(500).json({ msg: 'Error sending OTP, please try again.' });
     }
   } catch (err) {
     console.error('Register Error:', err.message);
@@ -43,7 +45,8 @@ console.log(req.body);
 // OTP verification route
 router.post('/verify', async (req, res) => {
   const { email, otp } = req.body;
-console.log(req.body);
+  console.log(req.body); // Log request body to check incoming data
+
   try {
     const isVerified = await verifyOTP(email, otp);
     if (!isVerified) {
@@ -51,6 +54,7 @@ console.log(req.body);
     }
 
     await User.findOneAndUpdate({ email }, { isVerified: true });
+    console.log('Email verified successfully:', email); // Log successful email verification
     res.status(200).redirect('/signin'); // Redirect to sign-in page
   } catch (err) {
     console.error('Verify Error:', err.message);
@@ -61,7 +65,8 @@ console.log(req.body);
 // Sign-in route
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
+  console.log(req.body); // Log request body to check incoming data
+
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -84,7 +89,10 @@ router.post('/signin', async (req, res) => {
     };
 
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
-      if (err) throw err;
+      if (err) {
+        console.error('JWT Sign Error:', err.message);
+        return res.status(500).json({ msg: 'Server error' });
+      }
       res.json({ token });
     });
   } catch (err) {

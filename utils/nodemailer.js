@@ -1,38 +1,63 @@
 const nodemailer = require('nodemailer');
-const Otp = require('../models/Otp');  // Make sure you have this model
+const Otp = require('../models/Otp');  
+
 
 const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE,
+  service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.EMAIL_USER,  // Your Gmail email address
+    pass: process.env.EMAIL_PASS   // Your Gmail password or App Password
   }
 });
 
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('Error verifying transporter:', error);
+  } else {
+    console.log('Transporter is ready to send emails');
+  }
+});
+
+
+transporter.on('error', err => {
+  console.error('Nodemailer error:', err.message);
+});
+
+
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
+
 
 const sendOTP = async (email) => {
   const otp = generateOTP();
+  
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.EMAIL_USER,  
     to: email,
     subject: 'Your OTP Code',
     text: `Your OTP code is ${otp}`
   };
 
-  await transporter.sendMail(mailOptions);
-  
-  // Store OTP in database
-  const otpData = new Otp({ email, otp });
-  await otpData.save();
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('OTP sent successfully to:', email); 
+    
+    
+    const otpData = new Otp({ email, otp });
+    await otpData.save();
 
-  return otp;
+    return otp;
+  } catch (err) {
+    console.error('Error sending OTP email:', err.message);
+    throw err;
+  }
 };
+
 
 const verifyOTP = async (email, otp) => {
   const otpData = await Otp.findOne({ email, otp });
   if (otpData) {
-    await Otp.deleteOne({ _id: otpData._id });  // Delete OTP after verification
+    await Otp.deleteOne({ _id: otpData._id });
     return true;
   }
   return false;
