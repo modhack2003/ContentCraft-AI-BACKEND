@@ -19,7 +19,7 @@ app.use('/api/auth', require('./routes/auth'));
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Authentication API');
-  alert(req.body);
+  console.log(req.body);
 });
 
 const PORT = process.env.PORT || 3000;
