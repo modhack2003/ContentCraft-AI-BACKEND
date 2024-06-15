@@ -25,12 +25,11 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    // Send OTP
-    await sendOTP(phoneNumber);
+    const otp = await sendOTP(phoneNumber);
 
-    res.status(201).json({ msg: 'User registered. Verify OTP to complete registration.' });
+    res.status(201).json({ msg: 'User registered. Verify OTP to complete registration.', otp });
   } catch (err) {
-    console.error(err.message);
+    console.error('Register Error:', err.message);
     res.status(500).send('Server error');
   }
 });
@@ -48,7 +47,7 @@ router.post('/verify', async (req, res) => {
 
     res.status(200).json({ msg: 'Phone number verified' });
   } catch (err) {
-    console.error(err.message);
+    console.error('Verify Error:', err.message);
     res.status(500).send('Server error');
   }
 });
@@ -82,7 +81,7 @@ router.post('/signin', async (req, res) => {
       res.json({ token });
     });
   } catch (err) {
-    console.error(err.message);
+    console.error('Signin Error:', err.message);
     res.status(500).send('Server error');
   }
 });

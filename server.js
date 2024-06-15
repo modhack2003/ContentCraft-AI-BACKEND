@@ -10,12 +10,16 @@ app.use(bodyParser.json());
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  });
 
 app.use('/api/auth', require('./routes/auth'));
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Authentication API');
+  alert(req.body);
 });
 
 const PORT = process.env.PORT || 3000;
