@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
 const path = require('path');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
@@ -42,7 +42,8 @@ app.get('/register', (req, res) => {
 
 // Render OTP Verification Page
 app.get('/verify', (req, res) => {
-  res.render('verify');
+  const { email } = req.query;
+  res.render('verify', { email });
 });
 
 // Render Sign-in Page

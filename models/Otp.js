@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const OtpSchema = new mongoose.Schema({
-  phoneNumber: {
+  email: {
     type: String,
     required: true,
     unique: true
@@ -13,7 +13,7 @@ const OtpSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 300  // OTP expires after 5 minutes (adjust as needed)
+    expires: 300  // OTP expires after 5 minutes
   }
 });
 
