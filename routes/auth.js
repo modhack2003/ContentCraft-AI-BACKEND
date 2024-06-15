@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post('/register', async (req, res) => {
   const { phoneNumber, password, confirmPassword } = req.body;
+  console.log(req.body)
 
   if (password !== confirmPassword) {
     return res.status(400).json({ msg: 'Passwords do not match' });
@@ -36,7 +37,7 @@ router.post('/register', async (req, res) => {
 
 router.post('/verify', async (req, res) => {
   const { phoneNumber, otp } = req.body;
-
+  console.log(req.body)
   try {
     const isVerified = await verifyOTP(phoneNumber, otp);
     if (!isVerified) {
@@ -54,6 +55,7 @@ router.post('/verify', async (req, res) => {
 
 router.post('/signin', async (req, res) => {
   const { phoneNumber, password } = req.body;
+  console.log(req.body)
 
   try {
     const user = await User.findOne({ phoneNumber });
