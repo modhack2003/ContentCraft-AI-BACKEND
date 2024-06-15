@@ -2,12 +2,12 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { sendOTP, verifyOTP } = require('../utils/otp');
+const { sendOTP, verifyOTP } = require('../utils/otp'); // Ensure correct import path
 const router = express.Router();
 
 router.post('/register', async (req, res) => {
   const { phoneNumber, password, confirmPassword } = req.body;
-  console.log(req.body)
+  console.log(req.body);
 
   if (password !== confirmPassword) {
     return res.status(400).json({ msg: 'Passwords do not match' });
@@ -26,9 +26,14 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    const otp = await sendOTP(phoneNumber);
-
-    res.status(201).json({ msg: 'User registered. Verify OTP to complete registration.', otp });
+    try {
+      const otp = await sendOTP(phoneNumber);
+      res.status(201).json({ msg: 'User registered. Verify OTP to complete registration.', otp });
+    } catch (otpError) {
+      console.error('Error sending OTP:', otpError.message);
+      await User.findByIdAndDelete(user._id); // Rollback user creation if OTP fails
+      res.status(500).json({ msg: 'Error sending OTP, please try again.' });
+    }
   } catch (err) {
     console.error('Register Error:', err.message);
     res.status(500).send('Server error');
@@ -37,7 +42,8 @@ router.post('/register', async (req, res) => {
 
 router.post('/verify', async (req, res) => {
   const { phoneNumber, otp } = req.body;
-  console.log(req.body)
+  console.log(req.body);
+
   try {
     const isVerified = await verifyOTP(phoneNumber, otp);
     if (!isVerified) {
@@ -45,7 +51,6 @@ router.post('/verify', async (req, res) => {
     }
 
     await User.findOneAndUpdate({ phoneNumber }, { isVerified: true });
-
     res.status(200).json({ msg: 'Phone number verified' });
   } catch (err) {
     console.error('Verify Error:', err.message);
@@ -55,7 +60,7 @@ router.post('/verify', async (req, res) => {
 
 router.post('/signin', async (req, res) => {
   const { phoneNumber, password } = req.body;
-  console.log(req.body)
+  console.log(req.body);
 
   try {
     const user = await User.findOne({ phoneNumber });
