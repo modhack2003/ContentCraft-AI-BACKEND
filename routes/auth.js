@@ -5,10 +5,10 @@ const User = require('../models/User');
 const { sendOTP, verifyOTP } = require('../utils/nodemailer');
 const router = express.Router();
 
-// Registration route
+
 router.post('/register', async (req, res) => {
   const { email, password, confirmPassword } = req.body;
-  console.log(req.body); // Log request body to check incoming data
+  console.log(req.body); 
 
   if (password !== confirmPassword) {
     return res.status(400).json({ msg: 'Passwords do not match' });
@@ -22,18 +22,18 @@ router.post('/register', async (req, res) => {
 
     user = new User({
       email,
-      password // Ensure password is hashed before saving in actual application
+      password 
     });
 
     await user.save();
 
     try {
       const otp = await sendOTP(email);
-      console.log('OTP sent successfully:', otp); // Log successful OTP sending
-      res.status(201).redirect(`/verify?email=${email}`); // Redirect to OTP verification page
+      console.log('OTP sent successfully:', otp); 
+      res.status(201).redirect(`/verify?email=${email}`); 
     } catch (otpError) {
       console.error('Error sending OTP:', otpError.message);
-      await User.findByIdAndDelete(user._id); // Rollback user creation if OTP fails
+      await User.findByIdAndDelete(user._id); 
       return res.status(500).json({ msg: 'Error sending OTP, please try again.' });
     }
   } catch (err) {
@@ -42,10 +42,10 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// OTP verification route
+
 router.post('/verify', async (req, res) => {
   const { email, otp } = req.body;
-  console.log(req.body); // Log request body to check incoming data
+  console.log(req.body); 
 
   try {
     const isVerified = await verifyOTP(email, otp);
@@ -54,18 +54,16 @@ router.post('/verify', async (req, res) => {
     }
 
     await User.findOneAndUpdate({ email }, { isVerified: true });
-    console.log('Email verified successfully:', email); // Log successful email verification
-    res.status(200).redirect('/signin'); // Redirect to sign-in page
+    console.log('Email verified successfully:', email);
+    res.status(200).redirect('/signin');
   } catch (err) {
     console.error('Verify Error:', err.message);
     res.status(500).send('Server error');
   }
 });
-
-// Sign-in route
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body); // Log request body to check incoming data
+  console.log(req.body); 
 
   try {
     const user = await User.findOne({ email });
