@@ -1,4 +1,4 @@
-Sure! Here is an updated documentation for your GitHub repository, including the new changes and improvements for handling OTPs, as well as setting up and using the authentication system with Facebook, Google, and Apple OAuth.
+
 
 ### Documentation
 
