@@ -101,5 +101,44 @@ router.post('/reset-password', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+router.post('/signin', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    let user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ msg: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: 'Invalid credentials' });
+    }
+
+    // If credentials are correct, generate JWT token
+    const payload = {
+      user: {
+        id: user.id,
+        email: user.email // Include any other relevant user data
+      }
+    };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }, // Token expires in 1 hour (adjust as needed)
+      (err, token) => {
+        if (err) {
+          console.error('JWT Sign Error:', err.message);
+          return res.status(500).json({ msg: 'Server error' });
+        }
+        res.json({ token });
+      }
+    );
+  } catch (err) {
+    console.error('Sign-in Error:', err.message);
+    res.status(500).send('Server error');
+  }
+});
 
 module.exports = router;
