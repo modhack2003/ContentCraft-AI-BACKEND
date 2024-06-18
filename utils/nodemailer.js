@@ -1,15 +1,13 @@
 const nodemailer = require('nodemailer');
-const Otp = require('../models/Otp');  
-
+const Otp = require('../models/Otp');
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,  // Your Gmail email address
-    pass: process.env.EMAIL_PASS   // Your Gmail password or App Password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
-
 
 transporter.verify((error, success) => {
   if (error) {
@@ -19,20 +17,17 @@ transporter.verify((error, success) => {
   }
 });
 
-
 transporter.on('error', err => {
   console.error('Nodemailer error:', err.message);
 });
 
-
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
-
 
 const sendOTP = async (email) => {
   const otp = generateOTP();
-  
+
   const mailOptions = {
-    from: process.env.EMAIL_USER,  
+    from: process.env.EMAIL_USER,
     to: email,
     subject: 'Your OTP Code',
     text: `Your OTP code is ${otp}`
@@ -40,9 +35,12 @@ const sendOTP = async (email) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('OTP sent successfully to:', email); 
-    
-    
+    console.log('OTP sent successfully to:', email);
+
+    // Remove any existing OTP for the email
+    await Otp.findOneAndDelete({ email });
+
+    // Save the new OTP
     const otpData = new Otp({ email, otp });
     await otpData.save();
 
@@ -52,7 +50,6 @@ const sendOTP = async (email) => {
     throw err;
   }
 };
-
 
 const verifyOTP = async (email, otp) => {
   const otpData = await Otp.findOne({ email, otp });

@@ -1,8 +1,13 @@
+const dotenv = require('dotenv');
+dotenv.config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
-const dotenv = require('dotenv');
+const passportconfig = require('./config/passport.js'); 
+const passport = require('passport'); 
+
+const session = require('express-session');
 
 dotenv.config();
 
@@ -11,6 +16,15 @@ const app = express();
 // Body parser middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Initialize session and passport middleware
+app.use(session({
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Set EJS as the view engine
 app.set('views', path.join(__dirname, 'views'));
@@ -29,6 +43,9 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
+
+
+app.use('/auth', require('./routes/authSocial'));
 
 // Render Home Page
 app.get('/', (req, res) => {
@@ -50,16 +67,13 @@ app.get('/verify', (req, res) => {
 app.get('/signin', (req, res) => {
   res.render('signin');
 });
-
-app.get('/request-password-reset', (req, res) => {
+app.get('/request-password-reset', (req,res)=>{
   res.render('request-password-reset');
-});
-
-// Render Reset Password Page
-app.get('/reset-password', (req, res) => {
-  const { email } = req.query;
-  res.render('reset-password', { email });
-});
+})
+app.get('/reset-password', (req,res)=>{
+  const {email} = req.query;
+  res.render('reset-password', {email});
+})
 
 // Start the server
 const PORT = process.env.PORT || 3000;
