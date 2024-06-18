@@ -51,6 +51,16 @@ app.get('/signin', (req, res) => {
   res.render('signin');
 });
 
+app.get('/request-password-reset', (req, res) => {
+  res.render('request-password-reset');
+});
+
+// Render Reset Password Page
+app.get('/reset-password', (req, res) => {
+  const { email } = req.query;
+  res.render('reset-password', { email });
+});
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
