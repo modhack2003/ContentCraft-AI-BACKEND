@@ -1,128 +1,189 @@
 
 
+### Documentation
 
-# Authentication API Documentation
+# OTP-Api
 
-## Overview
+This project implements an authentication system using Express.js, Mongoose, Passport.js, and JWT. It includes local registration and login, as well as social logins with Facebook, Google, and Apple. The system also supports OTP-based email verification and password reset.
 
-This API provides user authentication features, including registration, email verification, sign-in, and password reset using OTP.
+## Table of Contents
 
-**Base URL:** `https://auth-api-31e2.onrender.com`
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Running the Server](#running-the-server)
+- [API Endpoints](#api-endpoints)
+  - [Registration](#registration)
+  - [Email Verification](#email-verification)
+  - [Login](#login)
+  - [Password Reset](#password-reset)
+  - [Social Login](#social-login)
+    - [Facebook Login](#facebook-login)
+    - [Google Login](#google-login)
+    - [Apple Login](#apple-login)
+- [Usage](#usage)
 
-## Endpoints
+## Installation
 
-### 1. Register a New User
+1. Clone the repository:
 
-**URL:** `/api/auth/register`  
-**Method:** `POST`  
-**Description:** Registers a new user and sends a verification OTP to the provided email address.
+   ```sh
+   git clone https://github.com/your-username/otp-api.git
+   cd otp-api
+   ```
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "confirmPassword": "password123"
-}
+2. Install the dependencies:
+
+   ```sh
+   npm install
+   ```
+
+## Environment Variables
+
+Create a `.env` file in the root directory and add the following environment variables:
+
+```env
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+PORT=3000
+
+EMAIL_SERVICE=gmail
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_email_password
+
+FACEBOOK_APP_ID=your_facebook_app_id
+FACEBOOK_APP_SECRET=your_facebook_app_secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+APPLE_CLIENT_ID=your_apple_client_id
+APPLE_TEAM_ID=your_apple_team_id
+APPLE_KEY_ID=your_apple_key_id
+APPLE_PRIVATE_KEY=your_apple_private_key
+
+SESSION_SECRET=your_session_secret
 ```
 
-**Response:**
-- `201 Created` - Redirects to the OTP verification page.
-- `400 Bad Request` - If passwords do not match or user already exists.
-- `500 Internal Server Error` - If there is an issue sending the OTP or saving the user.
+Ensure all the environment variables are correctly set, especially the credentials for email and social logins.
 
-### 2. Verify User Email
+## Running the Server
 
-**URL:** `/api/auth/verify`  
-**Method:** `POST`  
-**Description:** Verifies the user's email address using the OTP sent to their email.
+Start the server:
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "otp": "123456"
-}
+```sh
+npm start
 ```
 
-**Response:**
-- `200 OK` - Redirects to the sign-in page.
-- `400 Bad Request` - If the OTP is invalid.
-- `500 Internal Server Error` - If there is a server error.
+The server should be running on `http://localhost:3000`.
 
-### 3. User Sign-in
+## API Endpoints
 
-**URL:** `/api/auth/signin`  
-**Method:** `POST`  
-**Description:** Authenticates the user and returns a JWT token.
+### Registration
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
+- **POST /api/auth/register**
+  - Registers a new user and sends an OTP to their email for verification.
+  - Body parameters: `email`, `password`, `confirmPassword`
+  - Example request:
 
-**Response:**
-- `200 OK` - Returns a JWT token.
-- `400 Bad Request` - If the credentials are invalid or the email is not verified.
-- `500 Internal Server Error` - If there is a server error.
+    ```sh
+    curl -X POST http://localhost:3000/api/auth/register -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"password123","confirmPassword":"password123"}'
+    ```
 
-### 4. Request Password Reset
+### Email Verification
 
-**URL:** `/api/auth/request-password-reset`  
-**Method:** `POST`  
-**Description:** Sends an OTP to the user's email address for password reset.
+- **POST /api/auth/verify**
+  - Verifies the OTP sent to the user's email.
+  - Body parameters: `email`, `otp`
+  - Example request:
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com"
-}
-```
+    ```sh
+    curl -X POST http://localhost:3000/api/auth/verify -H "Content-Type: application/json" -d '{"email":"test@example.com","otp":"123456"}'
+    ```
 
-**Response:**
-- `200 OK` - Redirects to the reset password page.
-- `400 Bad Request` - If the user does not exist.
-- `500 Internal Server Error` - If there is an error sending the OTP.
+### Login
 
-### 5. Reset Password
+- **POST /api/auth/signin**
+  - Authenticates a user with their email and password.
+  - Body parameters: `email`, `password`
+  - Example request:
 
-**URL:** `/api/auth/reset-password`  
-**Method:** `POST`  
-**Description:** Resets the user's password using the OTP sent to their email.
+    ```sh
+    curl -X POST http://localhost:3000/api/auth/signin -H "Content-Type: application/json" -d '{"email":"test@example.com","password":"password123"}'
+    ```
 
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "otp": "123456",
-  "newPassword": "newpassword123",
-  "confirmNewPassword": "newpassword123"
-}
-```
+### Password Reset
 
-**Response:**
-- `200 OK` - Password reset successfully.
-- `400 Bad Request` - If the OTP is invalid or the passwords do not match.
-- `500 Internal Server Error` - If there is a server error.
+- **POST /api/auth/request-password-reset**
+  - Requests an OTP for password reset.
+  - Body parameters: `email`
+  - Example request:
+
+    ```sh
+    curl -X POST http://localhost:3000/api/auth/request-password-reset -H "Content-Type: application/json" -d '{"email":"test@example.com"}'
+    ```
+
+- **POST /api/auth/reset-password**
+  - Resets the user's password using the OTP.
+  - Body parameters: `email`, `otp`, `newPassword`, `confirmNewPassword`
+  - Example request:
+
+    ```sh
+    curl -X POST http://localhost:3000/api/auth/reset-password -H "Content-Type: application/json" -d '{"email":"test@example.com","otp":"123456","newPassword":"newpassword123","confirmNewPassword":"newpassword123"}'
+    ```
+
+### Social Login
+
+#### Facebook Login
+
+- **GET /auth/facebook**
+  - Redirects the user to Facebook for authentication.
+
+- **GET /auth/facebook/callback**
+  - Facebook redirects to this endpoint after authentication.
+  - Example URL:
+
+    ```
+    http://localhost:3000/auth/facebook/callback
+    ```
+
+#### Google Login
+
+- **GET /auth/google**
+  - Redirects the user to Google for authentication.
+
+- **GET /auth/google/callback**
+  - Google redirects to this endpoint after authentication.
+  - Example URL:
+
+    ```
+    http://localhost:3000/auth/google/callback
+    ```
+
+#### Apple Login
+## not Available now
+- **GET /auth/apple**
+  - Redirects the user to Apple for authentication.
+
+- **POST /auth/apple/callback**
+  - Apple redirects to this endpoint after authentication.
+  - Example URL:
+
+    ```
+    http://localhost:3000/auth/apple/callback
+    ```
 
 ## Usage
 
-### Register a New User
-1. Send a `POST` request to `/api/auth/register` with the user's email, password, and password confirmation.
-2. Check your email for the OTP and verify your email.
+1. **Register a new user**: Send a POST request to `/api/auth/register` with the user's email and password. An OTP will be sent to the user's email.
 
-### Sign In
-1. Send a `POST` request to `/api/auth/signin` with the user's email and password.
-2. If successful, you will receive a JWT token.
+2. **Verify email**: Send a POST request to `/api/auth/verify` with the email and OTP to verify the user's email address.
 
-### Forgot Password
-1. Send a `POST` request to `/api/auth/request-password-reset` with the user's email.
-2. Check your email for the OTP and visit the reset password page.
-3. Send a `POST` request to `/api/auth/reset-password` with the user's email, OTP, new password, and password confirmation.
+3. **Login**: Send a POST request to `/api/auth/signin` with the email and password to log in.
+
+4. **Request password reset**: Send a POST request to `/api/auth/request-password-reset` with the email to receive an OTP for password reset.
+
+5. **Reset password**: Send a POST request to `/api/auth/reset-password` with the email, OTP, and new password to reset the password.
+
+6. **Social login**: Use the provided endpoints to log in with Facebook, Google, or Apple.
 
 ---
 
-Feel free to contact us if you encounter any issues or have any questions about using the API.
+This documentation provides a comprehensive guide for setting up and using the OTP-Api project, including environment setup, running the server, and using the various API endpoints. Make sure to replace placeholder values in the `.env` file with actual credentials.
