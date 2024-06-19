@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Register route
 router.post('/register', async (req, res) => {
-  const { email, password, confirmPassword } = req.body;
+  const { email, password, confirmPassword, role } = req.body;
   if (password !== confirmPassword) {
     return res.status(400).json({ msg: 'Passwords do not match' });
   }
@@ -18,7 +18,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    user = new User({ email, password });
+    user = new User({ email, password, role: role || 'user' }); // Assign default role as 'user' if not provided
     await user.save();
 
     try {
@@ -101,6 +101,7 @@ router.post('/reset-password', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
 
@@ -119,7 +120,8 @@ router.post('/signin', async (req, res) => {
     const payload = {
       user: {
         id: user.id,
-        email: user.email // Include any other relevant user data
+        email: user.email,
+        role: user.role // Include user role in the payload
       }
     };
 
@@ -132,7 +134,18 @@ router.post('/signin', async (req, res) => {
           console.error('JWT Sign Error:', err.message);
           return res.status(500).json({ msg: 'Server error' });
         }
-        res.json({ token });
+
+        // Set token as cookie
+        res.cookie('token', token, { httpOnly: true });
+        
+        // Redirect based on user role
+        if (user.role === 'admin') {
+          return res.redirect('/admin');
+        } else if (user.role === 'user') {
+          return res.redirect('/user');
+        } else {
+          return res.redirect('/guest');
+        }
       }
     );
   } catch (err) {
@@ -140,5 +153,7 @@ router.post('/signin', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
+
 
 module.exports = router;

@@ -1,10 +1,14 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+// Define the roles
+const roles = ['admin', 'user', 'guest'];
+
 const UserSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   password: { type: String, required: false },
-  isVerified: { type: Boolean, default: false }
+  isVerified: { type: Boolean, default: false },
+  role: { type: String, enum: roles, default: 'user' } 
 });
 
 UserSchema.pre('save', async function(next) {
