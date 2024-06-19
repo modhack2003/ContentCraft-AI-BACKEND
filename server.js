@@ -6,9 +6,8 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const passport = require('passport'); 
+const passport = require('./config/passport'); 
 const authorize = require('./middleware/authorize');
-dotenv.config();
 
 const app = express();
 
@@ -29,6 +28,9 @@ app.use(session({
     sameSite: 'None', // Required for cross-site requests
   }
 }));
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -40,9 +42,7 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 
 
 
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 // Set EJS as the view engine
 app.set('views', path.join(__dirname, 'views'));
