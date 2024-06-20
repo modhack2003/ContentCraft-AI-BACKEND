@@ -12,7 +12,7 @@ function authorize(roles = []) {
     try {
       const token = req.cookies.token;
       if (!token) {
-        return res.status(401).json({ message: 'token not found' });
+        return res.status(401).json({ message: 'token not found. please login!! ' });
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -21,7 +21,7 @@ function authorize(roles = []) {
       const user = await User.findById(req.user.id);
       console.log(user.role)
       if (roles.length && !roles.includes(user.role)) {
-        return res.status(401).json({ message: ' you are not Unauthorized to this page' });
+        return res.status(401).json({ message: ' You are not Unauthorized to visit this page' });
       }
 
       if (!user) {

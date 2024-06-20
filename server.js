@@ -40,10 +40,6 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     process.exit(1);
   });
 
-
-
-
-
 // Set EJS as the view engine
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -54,6 +50,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/auth', require('./routes/authSocial'));
+app.use('/api', require('./routes/chat')); // Register chat route
 
 // Render Home Page
 app.get('/', (req, res) => {
@@ -91,12 +88,20 @@ app.get('/admin', authorize('admin'), (req, res) => {
   res.send('Admin content');
 });
 
+app.get("/chat", authorize(['user', 'admin']), (req, res) => {
+  res.render("chat");
+});
+
 app.get('/user', authorize(['user', 'admin']), (req, res) => {
   res.send('User content');
 });
 
 app.get('/guest', authorize(['guest', 'user', 'admin']), (req, res) => {
   res.send('Guest content');
+});
+
+app.get("/*", (req, res) => {
+  res.redirect("/");
 });
 
 // Start the server

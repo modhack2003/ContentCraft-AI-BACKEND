@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat Screen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f0f0;
+    }
+    .chat-container {
+      max-width: 800px;
+      margin: 0 auto;
+      margin-top: 50px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .chat-messages {
+      height: 400px;
+      overflow-y: scroll;
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+    }
+    .message {
+      margin-bottom: 10px;
+    }
+    .message.user {
+      text-align: right;
+    }
+    .message.ai {
+      text-align: left;
+    }
+    .message p {
+      display: inline-block;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 60%;
+    }
+    .message.user p {
+      background-color: #007bff;
+      color: white;
+    }
+    .message.ai p {
+      background-color: #e0e0e0;
+    }
+    .typing-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background-color: #e0e0e0;
+      border-radius: 50%;
+      margin-right: 5px;
+      animation: typing 1s infinite;
+    }
+    @keyframes typing {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <h1 class="text-2xl font-bold mb-4">AI Chat Screen</h1>
+    <div id="chat-messages" class="chat-messages">
+      <!-- Messages will be appended here -->
+    </div>
+    <form id="chat-form" class="flex">
+      <input id="user-input" type="text" class="flex-1 p-2 border rounded-l-lg" placeholder="Type your message..." required>
+      <button type="submit" class="p-2 bg-blue-500 text-white rounded-r-lg">Send</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('chat-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const userInput = document.getElementById('user-input').value;
+      if (!userInput.trim()) return;
+
+      addMessage('user', userInput);
+      document.getElementById('user-input').value = '';
+
+      addTypingIndicator();
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: userInput }),
+        });
+        const data = await response.json();
+        removeTypingIndicator();
+        simulateTyping('ai', data.reply);
+      } catch (error) {
+        console.error('Error:', error);
+        removeTypingIndicator();
+      }
+    });
+
+    function addMessage(sender, text) {
+      const messageContainer = document.createElement('div');
+      messageContainer.classList.add('message', sender);
+
+      const messageContent = document.createElement('p');
+      messageContent.textContent = text;
+
+      messageContainer.appendChild(messageContent);
+      document.getElementById('chat-messages').appendChild(messageContainer);
+      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+    }
+
+    function addTypingIndicator() {
+      const typingIndicator = document.createElement('div');
+      typingIndicator.classList.add('message', 'ai');
+      typingIndicator.id = 'typing-indicator';
+      typingIndicator.innerHTML = '<p><span class="typing-indicator"></span><span class="typing-indicator"></span><span class="typing-indicator"></span></p>';
+
+      document.getElementById('chat-messages').appendChild(typingIndicator);
+      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+    }
+
+    function simulateTyping(sender, text) {
+      const messageContainer = document.createElement('div');
+      messageContainer.classList.add('message', sender);
+
+      const messageContent = document.createElement('p');
+      messageContainer.appendChild(messageContent);
+      document.getElementById('chat-messages').appendChild(messageContainer);
+
+      let index = 0;
+      function typeChar() {
+        if (index < text.length) {
+          messageContent.textContent += text.charAt(index);
+          index++;
+          setTimeout(typeChar, 10); // Adjust typing speed here
+        } else {
+          document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+        }
+      }
+      typeChar();
+    }
+  </script>
+</body>
+</html>

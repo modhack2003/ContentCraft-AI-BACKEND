@@ -5,6 +5,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const AppleStrategy = require('passport-apple').Strategy;
 const User = require('../models/User');
 
+dotenv.config(); // Ensure environment variables are loaded
+
 passport.use(new FacebookStrategy({
   clientID: process.env.FACEBOOK_APP_ID,
   clientSecret: process.env.FACEBOOK_APP_SECRET,
@@ -18,9 +20,16 @@ passport.use(new FacebookStrategy({
       user = new User({
         email,
         isVerified: true,
-        password: ''
+        password: '',
+        role: 'user' // Set role to 'user'
       });
       await user.save();
+    } else {
+      // Ensure the role is set to 'user' for existing users
+      if (!user.role) {
+        user.role = 'user';
+        await user.save();
+      }
     }
     done(null, user);
   } catch (err) {
@@ -40,9 +49,16 @@ passport.use(new GoogleStrategy({
       user = new User({
         email,
         isVerified: true,
-        password: ''
+        password: '',
+        role: 'user' // Set role to 'user'
       });
       await user.save();
+    } else {
+      // Ensure the role is set to 'user' for existing users
+      if (!user.role) {
+        user.role = 'user';
+        await user.save();
+      }
     }
     done(null, user);
   } catch (err) {
@@ -64,9 +80,16 @@ passport.use(new AppleStrategy({
       user = new User({
         email,
         isVerified: true,
-        password: ''
+        password: '',
+        role: 'user' // Set role to 'user'
       });
       await user.save();
+    } else {
+      // Ensure the role is set to 'user' for existing users
+      if (!user.role) {
+        user.role = 'user';
+        await user.save();
+      }
     }
     done(null, user);
   } catch (err) {
@@ -86,4 +109,5 @@ passport.deserializeUser(async (id, done) => {
     done(err, null);
   }
 });
+
 module.exports = passport;

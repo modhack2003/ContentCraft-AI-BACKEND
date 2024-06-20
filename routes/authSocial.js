@@ -2,7 +2,18 @@ const express = require('express');
 const passport = require('passport');
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const User = require("../models/User"); 
+const User = require("../models/User");
+
+// Helper function to handle redirection based on user role
+const handleRedirection = (userRole, res) => {
+  if (userRole === 'admin') {
+    res.redirect('/admin');
+  } else if (userRole === 'user') {
+    res.redirect('/user');
+  } else {
+    res.redirect('/guest');
+  }
+};
 
 // Facebook authentication routes
 router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
@@ -28,7 +39,8 @@ router.get('/facebook/callback',
           return res.status(500).json({ msg: "Server error" });
         }
         console.log("JWT created successfully");
-        res.json({ token });
+        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        handleRedirection(req.user.role, res);
       }
     );
   });
@@ -57,7 +69,8 @@ router.get('/google/callback',
           return res.status(500).json({ msg: "Server error" });
         }
         console.log("JWT created successfully");
-        res.json({ token });
+        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        handleRedirection(req.user.role, res);
       }
     );
   });
@@ -86,7 +99,8 @@ router.post('/apple/callback',
           return res.status(500).json({ msg: "Server error" });
         }
         console.log("JWT created successfully");
-        res.json({ token });
+        res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        handleRedirection(req.user.role, res);
       }
     );
   });

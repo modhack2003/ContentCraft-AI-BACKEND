@@ -140,9 +140,9 @@ router.post('/signin', async (req, res) => {
         
         // Redirect based on user role
         if (user.role === 'admin') {
-          return res.redirect('/admin');
+          return res.redirect('/chat');
         } else if (user.role === 'user') {
-          return res.redirect('/user');
+          return res.redirect('/chat');
         } else {
           return res.redirect('/guest');
         }
