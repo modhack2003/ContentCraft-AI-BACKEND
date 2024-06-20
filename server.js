@@ -11,10 +11,21 @@ const authorize = require('./middleware/authorize');
 const cors = require('cors')
 
 const app = express();
-app.use(cors({
-  origin: 'http://localhost:5173', // Your React app's URL
-  credentials: true 
-}));
+const allowedOrigins = ['http://localhost:5173', 'https://content-craft-ai-github.vercel.app/'];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Check if the origin is in the allowed origins list or if it's undefined (for non-browser requests)
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+};
+
+app.use(cors(corsOptions));
 // Body parser middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
