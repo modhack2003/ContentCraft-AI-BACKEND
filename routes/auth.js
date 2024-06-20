@@ -102,6 +102,7 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
 
@@ -116,36 +117,33 @@ router.post('/signin', async (req, res) => {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
-    // If credentials are correct, generate JWT token
     const payload = {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role // Include user role in the payload
+        role: user.role
       }
     };
 
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }, // Token expires in 1 hour (adjust as needed)
+      { expiresIn: '1h' },
       (err, token) => {
         if (err) {
           console.error('JWT Sign Error:', err.message);
           return res.status(500).json({ msg: 'Server error' });
         }
 
-        // Set token as cookie
-        res.cookie('token', token, { httpOnly: true });
-        
-        // Redirect based on user role
-        if (user.role === 'admin') {
-          return res.redirect('/chat');
-        } else if (user.role === 'user') {
-          return res.redirect('/chat');
-        } else {
-          return res.redirect('/guest');
-        }
+        // Set token as HTTP-only cookie
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'None'
+        });
+
+        // Send a response with user details
+        res.status(200).json({ user: payload.user });
       }
     );
   } catch (err) {
@@ -153,6 +151,7 @@ router.post('/signin', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 
 
 

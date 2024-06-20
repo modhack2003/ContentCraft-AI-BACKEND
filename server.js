@@ -11,7 +11,10 @@ const authorize = require('./middleware/authorize');
 const cors = require('cors')
 
 const app = express();
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:5173', // Your React app's URL
+  credentials: true 
+}));
 // Body parser middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
