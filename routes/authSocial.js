@@ -7,9 +7,9 @@ const User = require("../models/User");
 // Helper function to handle redirection based on user role
 const handleRedirection = (userRole, res) => {
   if (userRole === 'admin') {
-    res.redirect('/admin');
+    res.redirect('/chat');
   } else if (userRole === 'user') {
-    res.redirect('/user');
+    res.redirect('/chat');
   } else {
     res.redirect('/guest');
   }
