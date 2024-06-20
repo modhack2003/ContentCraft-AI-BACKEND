@@ -11,7 +11,7 @@ const authorize = require('./middleware/authorize');
 const cors = require('cors')
 
 const app = express();
-const allowedOrigins = ['http://localhost:5173', 'https://content-craft-ai-github.vercel.app/'];
+const allowedOrigins = ['http://localhost:5173', 'https://content-craft-ai-github.vercel.app/', "http://localhost:5174" ,"http://localhost:5174"];
 
 const corsOptions = {
   origin: (origin, callback) => {
