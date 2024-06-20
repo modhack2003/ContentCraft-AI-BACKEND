@@ -89,7 +89,7 @@
   <div class="chat-container">
     <h1 class="text-2xl font-bold mb-4">AI Chat Screen</h1>
     <div id="chat-messages" class="chat-messages">
-     
+
     </div>
     <form id="chat-form" class="flex">
       <input id="user-input" type="text" class="flex-1 p-2 border rounded-l-lg" placeholder="Type your message..."
@@ -101,8 +101,8 @@
   <script>
     document.getElementById('chat-form').addEventListener('submit', async (event) => {
       event.preventDefault();
-      const userInput = document.getElementById('user-input').value;
-      if (!userInput.trim()) return;
+      const userInput = document.getElementById('user-input').value.trim();
+      if (!userInput) return;
 
       addMessage('user', userInput);
       document.getElementById('user-input').value = '';
@@ -116,14 +116,22 @@
           },
           body: JSON.stringify({ message: userInput }),
         });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
         const data = await response.json();
         removeTypingIndicator();
         simulateTyping('ai', data.reply);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching data:', error);
         removeTypingIndicator();
+        // Optionally, provide feedback to the user about the error
+        // Example: alert('Failed to send message. Please try again later.');
       }
     });
+
 
     function addMessage(sender, text) {
       const messageContainer = document.createElement('div');
@@ -172,7 +180,7 @@
         if (index < text.length) {
           messageContent.textContent += text.charAt(index);
           index++;
-          setTimeout(typeChar, 50); // Adjust typing speed here
+          setTimeout(typeChar, 50);
         } else {
           document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
         }
