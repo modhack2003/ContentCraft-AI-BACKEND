@@ -41,6 +41,10 @@
 
     .message.ai {
       text-align: left;
+      background-color: #f1f1f1;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
     .message p {
@@ -56,17 +60,17 @@
     }
 
     .message.ai p {
-      background-color: #e0e0e0;
+      background-color: #d8d6d6;
     }
 
     .typing-indicator {
       display: inline-block;
-      width: 10px;
-      height: 10px;
-      background-color: #e0e0e0;
+      width: 7px;
+      height: 7px;
+      background-color: #474747;
       border-radius: 50%;
       margin-right: 5px;
-      animation: typing 1s infinite;
+      animation: typing 0.8s infinite;
     }
 
     @keyframes typing {
@@ -82,6 +86,37 @@
         transform: translateY(0);
       }
     }
+
+    .terminal {
+      background-color: #1e1e1e;
+      color: #c3c8c3;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+
+    .control-panel {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .control-panel button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .control-panel button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
@@ -89,16 +124,22 @@
   <div class="chat-container">
     <h1 class="text-2xl font-bold mb-4">AI Chat Screen</h1>
     <div id="chat-messages" class="chat-messages">
-
+      <!-- Messages will be appended here -->
     </div>
     <form id="chat-form" class="flex">
       <input id="user-input" type="text" class="flex-1 p-2 border rounded-l-lg" placeholder="Type your message..."
         required>
       <button type="submit" class="p-2 bg-blue-500 text-white rounded-r-lg">Send</button>
     </form>
+    <div class="control-panel">
+      <button id="decrease-speed">Slow Down</button>
+      <button id="increase-speed">Speed Up</button>
+    </div>
   </div>
 
   <script>
+    let typingSpeed = 80; // Default typing speed in milliseconds
+
     document.getElementById('chat-form').addEventListener('submit', async (event) => {
       event.preventDefault();
       const userInput = document.getElementById('user-input').value.trim();
@@ -132,6 +173,13 @@
       }
     });
 
+    document.getElementById('increase-speed').addEventListener('click', () => {
+      if (typingSpeed > 10) typingSpeed -= 10; // Increase speed
+    });
+
+    document.getElementById('decrease-speed').addEventListener('click', () => {
+      if (typingSpeed < 200) typingSpeed += 10; // Decrease speed
+    });
 
     function addMessage(sender, text) {
       const messageContainer = document.createElement('div');
@@ -171,23 +219,65 @@
       const messageContainer = document.createElement('div');
       messageContainer.classList.add('message', sender);
 
-      const messageContent = document.createElement('p');
-      messageContainer.appendChild(messageContent);
-      document.getElementById('chat-messages').appendChild(messageContainer);
+      // Check if the message contains code
+      const isCode = text.includes('```');
 
-      let index = 0;
-      function typeChar() {
-        if (index < text.length) {
-          messageContent.textContent += text.charAt(index);
-          index++;
-          setTimeout(typeChar, 50);
-        } else {
-          document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+      if (isCode) {
+        const codeContainer = document.createElement('pre');
+        codeContainer.classList.add('terminal');
+        const codeText = text.replace(/```/g, ''); // Remove backticks
+        messageContainer.appendChild(codeContainer);
+
+        let index = 0;
+        function typeChar() {
+          if (index < codeText.length) {
+            codeContainer.textContent += codeText.charAt(index);
+            index++;
+            setTimeout(typeChar, typingSpeed);
+          } else {
+            document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+          }
         }
+        typeChar();
+      } else {
+        const formattedText = formatText(text);
+        messageContainer.innerHTML = formattedText;
+
+        let index = 0;
+        const chars = messageContainer.textContent.split('');
+        messageContainer.textContent = '';
+
+        function typeChar() {
+          if (index < chars.length) {
+            messageContainer.textContent += chars[index];
+            index++;
+            setTimeout(typeChar, typingSpeed);
+          } else {
+            document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+          }
+        }
+        typeChar();
       }
-      typeChar();
+
+      document.getElementById('chat-messages').appendChild(messageContainer);
+      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
     }
 
+    function formatText(text) {
+      const lines = text.split('\n');
+      let html = '';
+
+      lines.forEach(line => {
+        if (line.startsWith('*')) {
+          const content = line.substring(1).trim();
+          html += `<ul><li>${content}</li></ul>`;
+        } else {
+          html += `<p>${line}</p>`;
+        }
+      });
+
+      return html;
+    }
   </script>
 </body>
 

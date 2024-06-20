@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getAIResponse } = require('../helpers/googleGenerativeAI');
 
-router.post('/chat', async (req, res) => { // Note: Changed to just '/' for clarity
+router.post('/chat', async (req, res) => { 
   const { message } = req.body;
   console.log({message})
   try {

@@ -8,9 +8,10 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('./config/passport'); 
 const authorize = require('./middleware/authorize');
+const cors = require('cors')
 
 const app = express();
-
+app.use(cors())
 // Body parser middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -50,7 +51,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/auth', require('./routes/authSocial'));
-app.use('/api', require('./routes/chat')); // Register chat route
+app.use('/api', require('./routes/chat')); 
 
 // Render Home Page
 app.get('/', (req, res) => {
