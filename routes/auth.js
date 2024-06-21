@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Register route
 router.post('/register', async (req, res) => {
-  const { email, password, confirmPassword, role } = req.body;
+  const { name, email, password, confirmPassword, role } = req.body;
   if (password !== confirmPassword) {
     return res.status(400).json({ msg: 'Passwords do not match' });
   }
@@ -18,7 +18,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    user = new User({ email, password, role: role || 'user' }); // Assign default role as 'user' if not provided
+    user = new User({ name, email, password, role: role || 'user' }); // Include name in user creation
     await user.save();
 
     try {
@@ -102,7 +102,7 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-
+// Sign-in route
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
 
@@ -151,8 +151,5 @@ router.post('/signin', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
-
-
 
 module.exports = router;
