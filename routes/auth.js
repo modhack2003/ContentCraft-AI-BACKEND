@@ -18,13 +18,13 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    user = new User({ name, email, password, role: role || 'user' }); // Include name in user creation
+    user = new User({ name, email, password, role: role || 'user' });
     await user.save();
 
     try {
       const otp = await sendOTP(email);
       console.log('OTP sent successfully:', otp);
-      res.status(201).redirect(`/verify?email=${email}`);
+      res.status(201).json({ msg: 'User registered successfully. OTP sent.', email });
     } catch (otpError) {
       console.error('Error sending OTP:', otpError.message);
       await User.findByIdAndDelete(user._id);
@@ -32,7 +32,7 @@ router.post('/register', async (req, res) => {
     }
   } catch (err) {
     console.error('Register Error:', err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
@@ -47,10 +47,10 @@ router.post('/verify', async (req, res) => {
 
     await User.findOneAndUpdate({ email }, { isVerified: true });
     console.log('Email verified successfully:', email);
-    res.status(200).redirect('/signin');
+    res.status(200).json({ msg: 'Email verified successfully' });
   } catch (err) {
     console.error('Verify Error:', err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
@@ -66,14 +66,14 @@ router.post('/request-password-reset', async (req, res) => {
     try {
       const otp = await sendOTP(email);
       console.log('OTP sent successfully:', otp);
-      res.redirect(`/reset-password?email=${email}`);
+      res.status(200).json({ msg: 'OTP sent. Check your email.', email });
     } catch (otpError) {
       console.error('Error sending OTP:', otpError.message);
       return res.status(500).json({ msg: 'Error sending OTP, please try again.' });
     }
   } catch (err) {
     console.error('Request Password Reset Error:', err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
@@ -95,10 +95,10 @@ router.post('/reset-password', async (req, res) => {
 
     await User.findOneAndUpdate({ email }, { password: hashedPassword });
     console.log('Password reset successfully for:', email);
-    res.redirect(`/signin`);    
+    res.status(200).json({ msg: 'Password reset successfully' });
   } catch (err) {
     console.error('Reset Password Error:', err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
@@ -135,20 +135,18 @@ router.post('/signin', async (req, res) => {
           return res.status(500).json({ msg: 'Server error' });
         }
 
-        // Set token as HTTP-only cookie
         res.cookie('token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'None'
         });
 
-        // Send a response with user details
         res.status(200).json({ user: payload.user });
       }
     );
   } catch (err) {
     console.error('Sign-in Error:', err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
