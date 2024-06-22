@@ -5,12 +5,10 @@ const User = require('../models/User');
 const { sendOTP, verifyOTP } = require('../utils/nodemailer');
 const router = express.Router();
 
+
 // Register route
 router.post('/register', async (req, res) => {
-  const { name, email, password, confirmPassword, role } = req.body;
-  if (password !== confirmPassword) {
-    return res.status(400).json({ msg: 'Passwords do not match' });
-  }
+  const { name, email, password } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -18,7 +16,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
-    user = new User({ name, email, password, role: role || 'user' });
+    user = new User({ name, email, password });
     await user.save();
 
     try {
@@ -36,6 +34,8 @@ router.post('/register', async (req, res) => {
   }
 });
 
+
+
 // OTP verification route
 router.post('/verify', async (req, res) => {
   const { email, otp } = req.body;
@@ -45,14 +45,76 @@ router.post('/verify', async (req, res) => {
       return res.status(400).json({ msg: 'Invalid OTP' });
     }
 
-    await User.findOneAndUpdate({ email }, { isVerified: true });
+    const user = await User.findOneAndUpdate(
+      { email },
+      { isVerified: true },
+      { new: true } // Return the updated document
+    );
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    let msg = 'Email verified successfully';
+   
+
     console.log('Email verified successfully:', email);
-    res.status(200).json({ msg: 'Email verified successfully' });
+    res.status(200).json({ msg, email });
   } catch (err) {
     console.error('Verify Error:', err.message);
     res.status(500).json({ msg: 'Server error' });
   }
 });
+
+router.post('/update-user-details', async (req, res) => {
+  const { email, role, description, organisation } = req.body;
+  console.log('Request body:', req.body);
+
+  try {
+    let updatedFields = {};
+    let updateRequired = false; 
+
+    if (role !== "") {
+      updatedFields.role = role;
+      updateRequired = true;
+    } 
+
+    if (description !== "") {
+      updatedFields.description = description;
+      updateRequired = true;
+    } 
+
+    if (organisation !== "") {
+      updatedFields.organisation = organisation;
+      updateRequired = true;
+    } 
+
+    console.log('Updated fields:', updatedFields);
+
+    if (!updateRequired) {
+      return res.status(200).json({ msg: 'Not set, please do in settings' });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { email },
+      updatedFields,
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    console.log('User details updated successfully for:', email);
+    res.status(200).json({ msg: 'User details updated successfully', user });
+  } catch (err) {
+    console.error('Update User Details Error:', err.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+
+
 
 // Password reset request route
 router.post('/request-password-reset', async (req, res) => {
@@ -101,7 +163,6 @@ router.post('/reset-password', async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 });
-
 // Sign-in route
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
@@ -121,7 +182,10 @@ router.post('/signin', async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        name: user.name,
+        description: user.description,
+        organisation: user.organisation
       }
     };
 
@@ -141,7 +205,10 @@ router.post('/signin', async (req, res) => {
           sameSite: 'None'
         });
 
-        res.status(200).json({ user: payload.user });
+        res.status(200).json({
+          token,
+          user: payload.user
+        });
       }
     );
   } catch (err) {
@@ -149,5 +216,9 @@ router.post('/signin', async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 });
+
+
+
+
 
 module.exports = router;

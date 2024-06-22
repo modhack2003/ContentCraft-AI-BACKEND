@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const roles = ['admin', 'user', 'guest'];
-
 const UserSchema = new mongoose.Schema({
-  name: {type: String, required: true },
+  name: { type: String, required: true },
   email: { type: String, unique: true, required: true },
-  password: { type: String, required: false },
+  password: { type: String, required: true },
   isVerified: { type: Boolean, default: false },
-  role: { type: String, enum: roles, default: 'user' } 
+  role: { type: String, default: 'Not set' }, 
+  description: { type: String, default: 'Not set' }, 
+  organisation: { type: String, default: 'Not set' } 
 });
 
 UserSchema.pre('save', async function(next) {
@@ -19,4 +19,5 @@ UserSchema.pre('save', async function(next) {
 });
 
 const User = mongoose.model('User', UserSchema);
+
 module.exports = User;
