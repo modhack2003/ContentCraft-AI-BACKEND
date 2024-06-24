@@ -6,18 +6,32 @@ const { sendOTP, verifyOTP } = require('../utils/nodemailer');
 const router = express.Router();
 
 
-// Register route
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
     let user = await User.findOne({ email });
+
     if (user) {
-      return res.status(400).json({ msg: 'User already exists' });
+      if (user.isVerified) {
+        return res.status(400).json({ msg: 'User already exists' });
+      } else {
+        await User.findByIdAndDelete(user._id);
+        console.log('Unverified user deleted:', email);
+      }
     }
 
-    user = new User({ name, email, password });
+    user = new User({ name, email, password, isVerified: false });
     await user.save();
+
+    // Schedule deletion of unverified user after 24 hours
+    setTimeout(async () => {
+      const foundUser = await User.findOne({ email });
+      if (foundUser && !foundUser.isVerified) {
+        await User.findByIdAndDelete(foundUser._id);
+        console.log('Unverified user deleted:', email);
+      }
+    }, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
 
     try {
       const otp = await sendOTP(email);
@@ -34,32 +48,43 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
-
-// OTP verification route
+/// OTP verification route
 router.post('/verify', async (req, res) => {
   const { email, otp } = req.body;
-  try {
-    const isVerified = await verifyOTP(email, otp);
-    if (!isVerified) {
-      return res.status(400).json({ msg: 'Invalid OTP' });
-    }
 
-    const user = await User.findOneAndUpdate(
-      { email },
-      { isVerified: true },
-      { new: true } // Return the updated document
-    );
+  try {
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    let msg = 'Email verified successfully';
-   
+    // Check if OTP matches
+    const isVerified = await verifyOTP(email, otp);
+    console.log(isVerified);
+
+    if (!isVerified) {
+      // Increment failed attempts and check if user should be deleted
+      user.failedAttempts = (user.failedAttempts || 0) + 1;
+      console.log(user.failedAttempts);
+      await user.save();
+
+      if (user.failedAttempts >= 5) {
+        await User.findByIdAndDelete(user._id);
+        console.log('User deleted due to 5 failed OTP attempts:', email);
+        return res.status(400).json({ msg: 'Too many invalid OTP attempts. Account deleted. Please register again.' });
+      }
+
+      return res.status(400).json({ msg: 'Invalid OTP' });
+    }
+
+    // Reset failed attempts if OTP is verified
+    delete user.failedAttempts;
+    user.isVerified = true;
+    await user.save();
 
     console.log('Email verified successfully:', email);
-    res.status(200).json({ msg, email });
+    res.status(200).json({ msg: 'Email verified successfully', email });
   } catch (err) {
     console.error('Verify Error:', err.message);
     res.status(500).json({ msg: 'Server error' });
@@ -173,6 +198,10 @@ router.post('/signin', async (req, res) => {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
+    if (!user.isVerified) {
+      return res.status(400).json({ msg: 'Please verify your email before signing in' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ msg: 'Invalid credentials' });
@@ -216,6 +245,7 @@ router.post('/signin', async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 });
+
 
 
 
