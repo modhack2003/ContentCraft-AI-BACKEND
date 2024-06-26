@@ -61,11 +61,13 @@ app.set('view engine', 'ejs');
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/auth', require('./routes/authSocial'));
 app.use('/api', require('./routes/chat')); 
+app.use('/api/createContent', require('./routes/createContent'));
 
 // Render Home Page
 app.get('/', (req, res) => {
