@@ -68,6 +68,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/auth', require('./routes/authSocial'));
 app.use('/api', require('./routes/chat')); 
 app.use('/api/createContent', require('./routes/createContent'));
+app.use('/api/consult', require('./routes/consult'));
 
 // Render Home Page
 app.get('/', (req, res) => {

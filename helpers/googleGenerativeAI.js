@@ -4,7 +4,7 @@ const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-pro", 
+  model: "gemini-1.5-pro",
 });
 
 const generationConfig = {
@@ -24,7 +24,7 @@ async function getAIResponse(prompt) {
 
     const result = await chatSession.sendMessage(prompt);
 
-    const generatedText = result.response.text();
+    const generatedText = await result.response.text();
     console.log('Received AI response:', generatedText);
 
     return generatedText;

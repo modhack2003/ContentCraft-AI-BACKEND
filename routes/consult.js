@@ -1,10 +1,11 @@
 const express = require('express');
-const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { getAIResponse } = require('../helpers/googleGenerativeAI');
 const cloudinary = require("cloudinary").v2;
-const fs = require('fs'); // Use native fs module
+const fs = require('fs');
+
+const router = express.Router();
 
 // Configure Cloudinary with your credentials
 cloudinary.config({
@@ -20,7 +21,6 @@ try {
   fs.statSync(uploadDirectory);
 } catch (err) {
   if (err.code === 'ENOENT') {
-    // Create the directory if it doesn't exist
     fs.mkdirSync(uploadDirectory, { recursive: true });
   } else {
     throw err;
@@ -56,40 +56,27 @@ async function uploadToCloudinary(filePath) {
   }
 }
 
-router.post('/create', upload.array('files', 10), async (req, res) => {
-  const { contentType, title } = req.body;
-  const files = req.files || []; 
+router.post('/create', upload.single('file'), async (req, res) => {
+  const { consultationType, consultationDetails } = req.body;
+  const file = req.file;
 
   try {
-    if (!contentType || !title) {
-      throw new Error('Missing contentType or title');
+    let fileUrl = '';
+
+    if (file) {
+      fileUrl = await uploadToCloudinary(file.path);
+      console.log(`Processed file ${file.filename} to Cloudinary: ${fileUrl}`);
     }
 
-    const imageUrls = [];
-    if (files.length > 0) {
-      const filePromises = files.map(async (file) => {
-        try {
-          const url = await uploadToCloudinary(file.path);
-          console.log(`Processed file ${file.filename} to Cloudinary: ${url}`);
-          imageUrls.push(url);
-        } catch (error) {
-          console.error('Error processing file:', error);
-          throw error;
-        }
-      });
+    const prompt = `Consultation Type: ${consultationType}\nDetails: ${consultationDetails}\nFile URL: ${fileUrl}`;
 
-      await Promise.all(filePromises);
-    }
-
-    const prompt = `Generate content of type "${contentType}" with the title "${title}"`;
-
-    console.log('Received request to create content with prompt:', prompt);
+    console.log('Received request to consult with prompt:', prompt);
 
     const aiResponse = await getAIResponse(prompt);
 
     console.log('Generated AI response:', aiResponse);
 
-    res.json({ reply: aiResponse, files });
+    res.json({ response: aiResponse, fileUrl });
   } catch (error) {
     console.error('Error:', error.message);
     res.status(400).json({ error: error.message });
