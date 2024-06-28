@@ -68,7 +68,15 @@ router.post('/create', upload.single('file'), async (req, res) => {
       console.log(`Processed file ${file.filename} to Cloudinary: ${fileUrl}`);
     }
 
-    const prompt = `Consultation Type: ${consultationType}\nDetails: ${consultationDetails}\nFile URL: ${fileUrl}`;
+    const prompt = `
+    Consultation Request:
+    Type: ${consultationType}
+    Details: ${consultationDetails}
+    file: ${fileUrl}
+    Please proceed with the consultation based on the above information.
+    `;
+    
+    
 
     console.log('Received request to consult with prompt:', prompt);
 
