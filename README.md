@@ -20,6 +20,8 @@ This project implements an authentication system using Express.js, Mongoose, Pas
     - [Facebook Login](#facebook-login)
     - [Google Login](#google-login)
     - [Apple Login](#apple-login)
+    -  - [Consultation with AI](#consultation-with-ai)
+  - [Content Creation with AI](#content-creation-with-ai)
 - [Usage](#usage)
 
 ## Installation
@@ -60,6 +62,12 @@ APPLE_KEY_ID=your_apple_key_id
 APPLE_PRIVATE_KEY=your_apple_private_key
 
 SESSION_SECRET=your_session_secret
+
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+GOOGLE_GEMINI_API_KEY
 ```
 
 Ensure all the environment variables are correctly set, especially the credentials for email and social logins.
@@ -168,6 +176,34 @@ The server should be running on `http://localhost:3000`.
 
     ```
     http://localhost:3000/auth/apple/callback
+    ```
+### Consultation with AI
+
+- **POST /api/consult/create**
+  - Initiates a consultation request with AI.
+  - Body parameters: `consultationType`, `consultationDetails`, `file` (optional)
+  - Example request:
+
+    ```sh
+    curl -X POST http://localhost:3000/api/consult/create \
+      -F "consultationType=Content Strategy" \
+      -F "consultationDetails=Need help with content strategy planning" \
+      -F "file=@/path/to/your/file.png"
+    ```
+
+### Content Creation with AI
+
+- **POST /api/content/create**
+  - Creates content using AI based on provided details.
+  - Body parameters: `contentType`, `title`, `files` (optional)
+  - Example request:
+
+    ```sh
+    curl -X POST http://localhost:3000/api/content/create \
+      -F "contentType=Article" \
+      -F "title=Guide to AI in Content Creation" \
+      -F "files=@/path/to/your/file1.png" \
+      -F "files=@/path/to/your/file2.png"
     ```
 
 ## Usage
