@@ -1,0 +1,165 @@
+{
+    "info": {
+      "name": "ContentCraftAi API",
+      "description": "Manages user registration, authentication, content creation, and consultation requests.",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "User Registration",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"user@example.com\",\n  \"password\": \"password\"\n}"
+          },
+          "url": {
+            "raw": "http://localhost:3000/api/auth/register",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "3000",
+            "path": [
+              "api",
+              "auth",
+              "register"
+            ]
+          },
+          "description": "Registers a new user."
+        },
+        "response": []
+      },
+      {
+        "name": "Verify Email with OTP",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\"\n}"
+          },
+          "url": {
+            "raw": "http://localhost:3000/api/auth/verify",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "3000",
+            "path": [
+              "api",
+              "auth",
+              "verify"
+            ]
+          },
+          "description": "Verifies user email using OTP."
+        },
+        "response": []
+      },
+      {
+        "name": "Request Password Reset",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"email\": \"user@example.com\"\n}"
+          },
+          "url": {
+            "raw": "http://localhost:3000/api/auth/request-password-reset",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "3000",
+            "path": [
+              "api",
+              "auth",
+              "request-password-reset"
+            ]
+          },
+          "description": "Initiates a password reset request."
+        },
+        "response": []
+      },
+      {
+        "name": "Reset Password",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"newpassword\",\n  \"confirmNewPassword\": \"newpassword\"\n}"
+          },
+          "url": {
+            "raw": "http://localhost:3000/api/auth/reset-password",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "3000",
+            "path": [
+              "api",
+              "auth",
+              "reset-password"
+            ]
+          },
+          "description": "Resets user password using OTP."
+        },
+        "response": []
+      },
+      {
+        "name": "Create Consultation Request",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"consultationType\": \"Legal\",\n  \"consultationDetails\": \"Need advice on contract terms\",\n  \"file\": \"https://cloudinary.com/path/to/file.pdf\"\n}"
+          },
+          "url": {
+            "raw": "http://localhost:3000/api/consultation/create",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "3000",
+            "path": [
+              "api",
+              "consultation",
+              "create"
+            ]
+          },
+          "description": "Creates a new consultation request."
+        },
+        "response": []
+      }
+    ]
+  }
+  
