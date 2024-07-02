@@ -58,6 +58,8 @@ async function uploadToCloudinary(filePath) {
 
 router.post('/create', upload.array('files', 10), async (req, res) => {
   const { contentType, title } = req.body;
+  const tokon = req.cookies;
+  console.log(tokon)  // To get the token
   const files = req.files || []; 
 
   try {

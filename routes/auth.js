@@ -138,10 +138,35 @@ router.post('/update-user-details', async (req, res) => {
 
 
 // Route to send OTP after verifying token
+
 router.post('/sendOtp', async (req, res) => {
-  const token  = req.cookies?.token;
-  console.log(token) 
-  
+  let token;
+  // console.log(req.headers);
+
+  // Check for token in authorization header
+  const token2 = req.headers["authorization"];
+  if (token2 && token2.startsWith("Bearer ")) {
+    token = token2.split(' ')[1];
+    // console.log('Token from authorization header:', token);
+  }
+
+  // Check for token in cookies if not found in authorization header
+  if (!token) {
+    const cookies = req.headers["cookie"];
+    if (cookies) {
+      const tokenCookie = cookies.split('; ').find(cookie => cookie.startsWith('token='));
+      if (tokenCookie) {
+        token = tokenCookie.split('=')[1];
+        // console.log('Token from cookies:', token);
+      }
+    }
+  }
+
+  // If token is still not found, return an error
+  if (!token) {
+    console.log("Authorization token is missing");
+    return res.status(400).json({ msg: 'Authorization token is missing' });
+  }
 
   try {
     // Verify token and find user's email
@@ -162,13 +187,34 @@ router.post('/sendOtp', async (req, res) => {
   }
 });
 
+
 // Route to reset password with token, OTP, current password, and new password
 router.post('/reset-password', async (req, res) => {
   const { otp, currentPassword, newPassword } = req.body;
-  const  token  = req.cookies?.token;
-   if  (!token) {
-      return res.json({msg : ' signin first'} )
-   } 
+  let token;
+
+  // Check for token in authorization header
+  const token2 = req.headers["authorization"];
+  if (token2 && token2.startsWith("Bearer ")) {
+    token = token2.split(' ')[1];
+  }
+
+  // Check for token in cookies if not found in authorization header
+  if (!token) {
+    const cookies = req.headers["cookie"];
+    if (cookies) {
+      const tokenCookie = cookies.split('; ').find(cookie => cookie.startsWith('token='));
+      if (tokenCookie) {
+        token = tokenCookie.split('=')[1];
+      }
+    }
+  }
+
+  // If token is still not found, return an error
+  if (!token) {
+    return res.status(401).json({ msg: 'Sign in first' });
+  }
+
   try {
     // Verify token and find user
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -177,8 +223,6 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ msg: 'User not found' });
     }
 
- 
-
     // Check current password for signed-in users
     if (currentPassword) {
       const isMatch = await bcrypt.compare(currentPassword, user.password);
@@ -186,11 +230,12 @@ router.post('/reset-password', async (req, res) => {
         return res.status(400).json({ msg: 'Current password is incorrect' });
       }
     }
-       // Verify OTP
-       const isVerified = await verifyOTP(user.email, otp);
-       if (!isVerified) {
-         return res.status(400).json({ msg: 'Invalid OTP' });
-       }
+
+    // Verify OTP
+    const isVerified = await verifyOTP(user.email, otp);
+    if (!isVerified) {
+      return res.status(400).json({ msg: 'Invalid OTP' });
+    }
 
     // Update password with new hashed password
     const salt = await bcrypt.genSalt(10);
@@ -203,7 +248,6 @@ router.post('/reset-password', async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 });
-
 
 
 router.post('/signin', async (req, res) => {
@@ -244,12 +288,18 @@ router.post('/signin', async (req, res) => {
           console.error('JWT Sign Error:', err.message);
           return res.status(500).json({ msg: 'Server error' });
         }
-
         res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production', // Ensure secure attribute is set in production
-          sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax' // Adjust as needed
+          httpOnly: false,
+          secure: false, // Ensure this is false if using http in development
+          sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+          path: '/',
         });
+        // res.cookie('token', token, {
+        //   httpOnly: true,
+        //   secure: process.env.NODE_ENV === 'production',
+        //   sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+        //   path: '/', // Ensure cookie is available on all paths
+        // });
 
         res.status(200).json({
           token,
@@ -263,5 +313,4 @@ router.post('/signin', async (req, res) => {
   }
 });
 
-
-module.exports = router;
+module.exports = router

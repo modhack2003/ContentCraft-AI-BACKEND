@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('./config/passport'); 
 const cors = require('cors');
+const { Http2ServerRequest } = require('http2');
 
 const app = express();
 
@@ -36,7 +37,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Initialize cookie-parser middleware
-app.use(cookieParser());
+
 
 // Initialize session middleware
 app.use(session({
@@ -44,6 +45,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: {
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production', // Secure cookie in production (HTTPS)
     sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Required for cross-site requests
   }
